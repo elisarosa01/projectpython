@@ -13,65 +13,83 @@ data = pd.read_csv("./GlobalTemperatures.csv")
 print(data.head())
 
 # Step 3: Pulizia del dataset
-
 # Visualizzare il numero di valori mancanti per ciascuna colonna
 print(data.isnull().sum())
-# dt                                    0
-# AverageTemperature               364130
-# AverageTemperatureUncertainty    364130
-# City                                  0
-# Country                               0
-# Latitude                              0
-# Longitude                             0
 
 # Rimuoviamo le righe con valori mancanti nelle colonne 'AverageTemperature' e 'AverageTemperatureUncertainty'
 data_cleaned = data.dropna(subset=['AverageTemperature', 'AverageTemperatureUncertainty'])
 
-# Verifichiamo che i valori mancanti siano stati rimossi
-print(data_cleaned.isnull().sum())
-# dt                               0
-# AverageTemperature               0
-# AverageTemperatureUncertainty    0
-# City                             0
-# Country                          0
-# Latitude                         0
-# Longitude                        0
-
 # Convertire la colonna 'dt' in formato datetime 
 data_cleaned['dt'] = pd.to_datetime(data_cleaned['dt'])
 
-# Verifica il tipo di dato della colonna 'dt'
-print(data_cleaned.dtypes)
-
-# Per adesso selezioniamo alcune città e vediamo com'è cambiata la 
-# temperatura negli anni
+# Assicurati che le colonne Latitude e Longitude siano di tipo numerico
+data_cleaned['Latitude'] = pd.to_numeric(data_cleaned['Latitude'], errors='coerce')
+data_cleaned['Longitude'] = pd.to_numeric(data_cleaned['Longitude'], errors='coerce')
 
 # Step 4: Filtriamo i dati dal 1750
 data_filtered = data_cleaned[data_cleaned['dt'] >= '1750-01-01']
 
-# Step 5: Aggregazione delle temperature medie per paese e anno
 # Estraiamo l'anno dalla colonna 'dt'
 data_filtered['Year'] = data_filtered['dt'].dt.year
 
-# Calcoliamo la temperatura media per ogni anno e paese
-avg_temp_by_country = data_filtered.groupby(['Country', 'Year'])['AverageTemperature'].mean().reset_index()
+# Step 5: Creiamo i periodi da 50 anni
+# Creiamo una nuova colonna 'Period' per definire i periodi di 50 anni
+data_filtered['Period'] = (data_filtered['Year'] // 50) * 50
 
-# Step 6: Selezioniamo alcuni paesi per la visualizzazione
-countries_of_interest = ['United Kingdom', 'Germany', 'United States', 'China', 'India']
-filtered_data = avg_temp_by_country[avg_temp_by_country['Country'].isin(countries_of_interest)]
+# Calcoliamo la temperatura massima e minima per ogni città in ciascun periodo
+temp_range_by_city_period = data_filtered.groupby(['City', 'Country', 'Period'])['AverageTemperature'].agg(['max', 'min']).reset_index()
 
-# Step 7: Creiamo un grafico
+# Calcoliamo l'intervallo di temperatura
+temp_range_by_city_period['TemperatureRange'] = temp_range_by_city_period['max'] - temp_range_by_city_period['min']
+
+# Step 6: Identificare le 3 città con i più ampi intervalli di temperatura per ogni periodo
+top_cities_by_period = temp_range_by_city_period.sort_values(['Period', 'TemperatureRange'], ascending=[True, False]).groupby('Period').head(3)
+
+# Visualizza le città con i più ampi intervalli di temperatura per ciascun periodo
+print(top_cities_by_period[['Period', 'City', 'Country', 'TemperatureRange']])
+
+# Se desideri anche visualizzarlo in un grafico
+# Puoi usare un grafico a barre per ogni periodo
 plt.figure(figsize=(14, 8))
-for country in countries_of_interest:
-    country_data = filtered_data[filtered_data['Country'] == country]
-    plt.plot(country_data['Year'], country_data['AverageTemperature'], label=country)
+for period in top_cities_by_period['Period'].unique():
+    period_data = top_cities_by_period[top_cities_by_period['Period'] == period]
+    plt.bar(period_data['City'] + ' (' + period.astype(str) + ')', period_data['TemperatureRange'], label=period)
 
-# Aggiungiamo titoli e etichette
-plt.title('Cambiamento della Temperatura Media per Paese (1750 - Oggi)')
-plt.xlabel('Anno')
-plt.ylabel('Temperatura Media (°C)')
+plt.title('Top 3 Città con i Maggiori Temperature Range per Periodo di 50 Anni (1750 - Oggi)')
+plt.xlabel('Città (Anno)')
+plt.ylabel('Temperature Range (°C)')
+plt.xticks(rotation=45)
 plt.grid(True)
 plt.legend()
+plt.show()
 
-# Mostriamo il grafico
+# Step 5: Creiamo i periodi da 70 anni
+# Creiamo una nuova colonna 'Period' per definire i periodi di 70 anni
+data_filtered['Period'] = (data_filtered['Year'] // 70) * 70
+
+# Calcoliamo la temperatura massima e minima per ogni città in ciascun periodo
+temp_range_by_city_period = data_filtered.groupby(['City', 'Country', 'Period'])['AverageTemperature'].agg(['max', 'min']).reset_index()
+
+# Calcoliamo l'intervallo di temperatura
+temp_range_by_city_period['TemperatureRange'] = temp_range_by_city_period['max'] - temp_range_by_city_period['min']
+
+# Step 6: Identificare le 3 città con i più ampi intervalli di temperatura per ogni periodo
+top_cities_by_period = temp_range_by_city_period.sort_values(['Period', 'TemperatureRange'], ascending=[True, False]).groupby('Period').head(3)
+
+# Visualizza le città con i più ampi intervalli di temperatura per ciascun periodo
+print(top_cities_by_period[['Period', 'City', 'Country', 'TemperatureRange']])
+
+# Se desideri anche visualizzarlo in un grafico
+# Puoi usare un grafico a barre per ogni periodo
+plt.figure(figsize=(14, 8))
+for period in top_cities_by_period['Period'].unique():
+    period_data = top_cities_by_period[top_cities_by_period['Period'] == period]
+    plt.bar(period_data['City'] + ' (' + period.astype(str) + ')', period_data['TemperatureRange'], label=period)
+
+plt.title('Top 3 Città con i Maggiori Temperature Range per Periodo di 70 Anni (1750 - Oggi)')
+plt.xlabel('Città (Anno)')
+plt.ylabel('Temperature Range (°C)')
+plt.xticks(rotation=45)
+plt.grid(True)
+plt.legend()
 plt.show()
