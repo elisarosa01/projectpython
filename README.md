@@ -12,5 +12,5 @@ The Weather project is a data analysis and visualization project that examines h
 
 ### Data Sources
 The project uses the following datasets from [the Kaggle Global Land Temperatures Dataset:](https://www.kaggle.com/datasets/berkeleyearth/climate-change-earth-surface-temperature-data):
-GlobalLandTemperaturesByCity.csv
-GlobalLandTemperaturesByMajorCity.csv
+- GlobalLandTemperaturesByCity.csv
+- GlobalLandTemperaturesByMajorCity.csv
