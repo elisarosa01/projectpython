@@ -1,1 +1,2 @@
-"C:\Users\39392\Desktop\DSE\1ST YEAR\PYTHON\projectpython\project python weather\data\GlobalLandTemperaturesByCity.csv"
+# Ignora il file GlobalLandTemperaturesByCity.csv nella cartella data
+data/GlobalLandTemperaturesByCity.csv
