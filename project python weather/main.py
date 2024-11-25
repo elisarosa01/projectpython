@@ -4,7 +4,7 @@ from route_calculation import RouteCalculator
 from utilities import Utils
 
 # Step 1: Load and clean data
-preprocessor = DataPreprocessor("datasets/GlobalLandTemperaturesByCity.csv")
+preprocessor = DataPreprocessor("data/GlobalLandTemperaturesByCity.csv")
 raw_data = preprocessor.load_data()
 cleaned_data = preprocessor.clean_data()
 
